@@ -12,9 +12,14 @@ const PORT = 8080;
 const app = e();
 app.use(e.json());
 app.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(req.body);
+  console.log(`Request Type: ${req.method}`);
+  console.log(`Content Type: ${req.headers["content-type"]}`);
+  console.log(`Date: ${new Date()}`);
+
   next();
 });
+app.set("view engine", "ejs");
+app.set("views", "src/views");
 
 app.get("/home", (req, res) => {
   res.contentType("text/html");
@@ -59,9 +64,9 @@ app.patch("/users/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.delete("/user/:id", async (req: Request, res: Response) => {
+app.delete("/users/:id", async (req: Request, res: Response) => {
   try {
-    const id = req.body.id;
+    const id = req.params.id;
     const user = await UserModel.findByIdAndDelete(id);
 
     res.json(user);
@@ -84,6 +89,11 @@ app.post("/users", async (req, res) => {
   } catch (error) {
     res.json({ message: (error as Error).message });
   }
+});
+
+app.get("/views/users", async (req: Request, res: Response) => {
+  const users: User[] = await UserModel.find();
+  res.render("index", { users });
 });
 
 app.listen(PORT, () => {
